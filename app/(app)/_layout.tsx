@@ -1,58 +1,67 @@
-import FontAwesome from "@expo/vector-icons/FontAwesome";
-import { Link, Tabs } from "expo-router";
+import { Ionicons } from "@expo/vector-icons";
+import { Tabs } from "expo-router";
 import React from "react";
-import { Pressable } from "react-native";
+import { TouchableOpacity } from "react-native";
+import { Colors } from "../../constants/Colors";
+import { useCustomTheme } from "../../src/context/ThemeContext"; // Importujemy nasz context
 
-import { useClientOnlyValue } from "@/components/useClientOnlyValue";
-import { useColorScheme } from "@/components/useColorScheme";
-import Colors from "@/constants/Colors";
-
-// You can explore the built-in icon families and icons on the web at https://icons.expo.fyi/
-function TabBarIcon(props: {
-  name: React.ComponentProps<typeof FontAwesome>["name"];
-  color: string;
-}) {
-  return <FontAwesome size={28} style={{ marginBottom: -3 }} {...props} />;
-}
-
-export default function TabLayout() {
-  const colorScheme = useColorScheme();
+export default function AppLayout() {
+  const { themeMode, toggleTheme } = useCustomTheme();
+  const theme = Colors[themeMode];
 
   return (
     <Tabs
       screenOptions={{
-        tabBarActiveTintColor: Colors[colorScheme ?? "light"].tint,
-        // Disable the static render of the header on web
-        // to prevent a hydration error in React Navigation v6.
-        headerShown: useClientOnlyValue(false, true),
+        tabBarActiveTintColor: theme.tint,
+        tabBarInactiveTintColor: theme.tabIconDefault,
+        tabBarStyle: {
+          height: 60,
+          backgroundColor: theme.card,
+          borderTopColor: theme.border,
+        },
+        headerStyle: {
+          backgroundColor: theme.card,
+        },
+        headerTintColor: theme.text,
+        // --- KLUCZOWA ZMIANA: Dodajemy przycisk do paska na górze ---
+        headerRight: () => (
+          <TouchableOpacity
+            onPress={toggleTheme}
+            style={{ marginRight: 20, padding: 5 }}
+          >
+            <Ionicons
+              name={themeMode === "dark" ? "sunny" : "moon"}
+              size={24}
+              color={themeMode === "dark" ? "#FFD700" : "#444"}
+            />
+          </TouchableOpacity>
+        ),
       }}
     >
       <Tabs.Screen
         name="index"
         options={{
-          title: "Tab One",
-          tabBarIcon: ({ color }) => <TabBarIcon name="code" color={color} />,
-          headerRight: () => (
-            <Link href="/modal" asChild>
-              <Pressable>
-                {({ pressed }) => (
-                  <FontAwesome
-                    name="info-circle"
-                    size={25}
-                    color={Colors[colorScheme ?? "light"].text}
-                    style={{ marginRight: 15, opacity: pressed ? 0.5 : 1 }}
-                  />
-                )}
-              </Pressable>
-            </Link>
+          title: "Panel",
+          tabBarIcon: ({ focused, color }) => (
+            <Ionicons
+              name={focused ? "grid" : "grid-outline"}
+              size={24}
+              color={color}
+            />
           ),
         }}
       />
       <Tabs.Screen
         name="scanner"
         options={{
-          title: "Scaner",
-          tabBarIcon: ({ color }) => <TabBarIcon name="code" color={color} />,
+          title: "Skaner OCR",
+          tabBarIcon: ({ focused, color }) => (
+            <Ionicons
+              name={focused ? "camera" : "camera-outline"}
+              size={26}
+              color={color}
+            />
+          ),
         }}
       />
     </Tabs>
